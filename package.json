@@ -5,6 +5,7 @@
   "type": "module",
   "homepage": "https://Rubesh2596.github.io/Ecommerce",
 
+
   "scripts": {
     "dev": "concurrently \"vite\" \"tsc --noEmit --watch\"",
     "build": "tsc -b && vite build",

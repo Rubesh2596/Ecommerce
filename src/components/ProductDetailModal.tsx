@@ -81,7 +81,7 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
         onClick={onClose}
       >
         <div
-          className="relative bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col md:flex-row overflow-hidden animate-slide-in-bottom"
+          className="relative bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full max-w-4xl h-screen md:h-[90vh] flex flex-col md:flex-row overflow-hidden animate-slide-in-bottom"
           onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
         >
           <button
@@ -101,31 +101,33 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
           </button>
 
           {/* Image Section - Takes up more space */}
-          <div className="w-full md:w-3/5 h-1/2 md:h-full bg-gray-100 flex justify-center items-center p-4 md:p-8 relative overflow-hidden">
-            <img
-              src={product.image}
-              alt={product.title}
-              className="max-h-full max-w-full object-contain transition-transform duration-500 ease-in-out hover:scale-105"
-            />
+          <div className="w-full md:w-3/5 bg-gray-100 flex justify-center items-center p-4 md:p-8 relative overflow-hidden">
+            <div className="w-full flex justify-center items-center">
+              <img
+                src={product.image}
+                alt={product.title}
+                className="max-h-56 sm:max-h-72 md:max-h-full max-w-full object-contain transition-transform duration-500 ease-in-out hover:scale-105"
+              />
+            </div>
           </div>
 
           {/* Details Section */}
-          <div className="w-full md:w-2/5 p-6 md:p-8 flex flex-col overflow-y-auto h-1/2 md:h-full">
-            {/* Top Details */}
-            <div className="flex-grow">
-              <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">{product.category}</span>
-              <h1 className="text-3xl font-bold text-slate-800 mt-2">{product.title}</h1>
+          <div className="w-full md:w-2/5 p-4 sm:p-6 flex flex-col">
+            {/* Top Details (scrollable) */}
+            <div className="flex-grow overflow-y-auto pr-2">
+              <span className="text-sm sm:text-sm font-semibold text-blue-600 uppercase tracking-wider">{product.category}</span>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mt-2">{product.title}</h1>
 
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-3 text-sm">
                 <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="font-bold text-lg text-slate-700">{product.rating.rate}</span>
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="font-bold text-base text-slate-700">{product.rating.rate}</span>
                 </div>
-                <span className="text-slate-500 text-sm">({product.rating.count} reviews)</span>
+                <span className="text-slate-500 text-xs">({product.rating.count} reviews)</span>
               </div>
 
               {/* Description with Read More */}
-              <div className="text-slate-600 mt-6 text-base leading-relaxed">
+              <div className="text-slate-600 mt-4 text-sm leading-relaxed">
                 <p>
                   {displayText}
                   {needsTruncation && isTruncated && '...'}
@@ -133,7 +135,7 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
                 {needsTruncation && (
                   <button
                     onClick={toggleTruncate}
-                    className="mt-2 text-blue-600 font-semibold flex items-center gap-1"
+                    className="mt-2 text-blue-600 font-semibold flex items-center gap-1 text-sm"
                   >
                     {isTruncated ? 'Read More' : 'Show Less'}
                     <ChevronDown className={`w-4 h-4 transition-transform ${!isTruncated ? 'rotate-180' : ''}`} />
@@ -142,34 +144,34 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
               </div>
             </div>
 
-            {/* Bottom Sticky CTA */}
-            <div className="mt-auto pt-6 bg-white">
-              <div className="flex justify-between items-center mb-4">
+            {/* Bottom CTA - stays visible */}
+            <div className="mt-4 sm:mt-6 pt-3 sm:pt-6 bg-white">
+              <div className="flex justify-between items-center mb-3">
                 {/* Quantity Controls */}
                 <div className="flex items-center border border-gray-200 rounded-lg">
-                  <button onClick={() => handleQuantityChange(-1)} className="p-3 text-gray-500 hover:text-black transition-colors" aria-label="Decrease quantity">
-                    <Minus size={16} />
+                  <button onClick={() => handleQuantityChange(-1)} className="p-2 text-gray-500 hover:text-black transition-colors" aria-label="Decrease quantity">
+                    <Minus size={14} />
                   </button>
                   <span className="font-bold text-lg w-10 text-center">{quantity}</span>
-                  <button onClick={() => handleQuantityChange(1)} className="p-3 text-gray-500 hover:text-black transition-colors" aria-label="Increase quantity">
-                    <Plus size={16} />
+                  <button onClick={() => handleQuantityChange(1)} className="p-2 text-gray-500 hover:text-black transition-colors" aria-label="Increase quantity">
+                    <Plus size={14} />
                   </button>
                 </div>
                 {/* Price */}
-                <span className="text-4xl font-extrabold text-slate-900">${(product.price * quantity).toFixed(2)}</span>
+                <span className="text-2xl sm:text-4xl font-extrabold text-slate-900">${(product.price * quantity).toFixed(2)}</span>
               </div>
               <button
                 onClick={handleAddToCart}
-                className={`w-full text-white font-bold py-4 px-6 rounded-lg transition-all transform duration-300 ease-in-out flex items-center justify-center gap-2 ${isAdded ? 'bg-green-500 scale-105' : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'}`}
+                className={`w-full text-white font-bold py-3 sm:py-4 px-4 rounded-lg transition-all transform duration-300 ease-in-out flex items-center justify-center gap-2 ${isAdded ? 'bg-green-500 scale-105' : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'}`}
               >
                 {isAdded ? (
                   <>
-                    <Check size={20} />
+                    <Check size={18} />
                     Added to Cart!
                   </>
                 ) : (
                   <>
-                    <ShoppingCart size={20} />
+                    <ShoppingCart size={18} />
                     Add to Cart
                   </>
                 )}

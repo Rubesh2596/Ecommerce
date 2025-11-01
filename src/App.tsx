@@ -28,6 +28,7 @@ const carouselProducts = [
 
 const HeroShowcase = () => {
   const [rotation, setRotation] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const totalItems = carouselProducts.length;
   const anglePerItem = 360 / totalItems;
 
@@ -35,13 +36,19 @@ const HeroShowcase = () => {
     setRotation(prev => prev + (direction === 'next' ? -anglePerItem : anglePerItem));
   };
 
-  // Auto-rotate effect
+  // Detect mobile viewport (<= 480px) and stop auto-rotation on mobile
   useEffect(() => {
-    const interval = setInterval(() => {
-      rotate('next');
-    }, 4000); // Rotate every 4 seconds
-    return () => clearInterval(interval);
+    const update = () => setIsMobile(window.innerWidth <= 480);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
+
+  useEffect(() => {
+    if (isMobile) return; // do not auto-rotate on small screens
+    const interval = setInterval(() => rotate('next'), 4000);
+    return () => clearInterval(interval);
+  }, [isMobile]);
 
   // Calculate radius based on screen size for responsiveness
   const [radius, setRadius] = useState(250);
@@ -60,26 +67,43 @@ const HeroShowcase = () => {
     return () => window.removeEventListener('resize', updateRadius);
   }, []);
 
+  // If mobile, render a simplified stacked hero without rotating carousel
+  if (isMobile) {
+    const first = carouselProducts[0];
+    return (
+      <section
+        className="relative min-h-screen text-white overflow-hidden"
+        style={{
+          backgroundImage: `url(${first.img})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay for subtle transparency */}
+        <div className="absolute inset-0 bg-black/50" aria-hidden />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 gap-6 items-center py-12 relative">
+          <div className="w-full text-center">
+            <span className="text-lg font-bold text-blue-300 uppercase tracking-widest">Welcome to ShopTechX</span>
+            <h2 className="text-3xl font-extrabold mt-4">The Future in Your Hands.</h2>
+            <p className="mt-4 text-sm text-gray-200">Explore our curated collection of the finest tech gear.</p>
+            <button onClick={() => { document.getElementById('product-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="mt-6 inline-flex items-center px-6 py-3 bg-blue-600/90 text-white rounded-full">Browse Collection</button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="relative min-h-[90vh] bg-gradient-to-b from-slate-900 via-gray-900 to-slate-900 text-white overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-[90vh] items-center py-20 lg:py-0">
+    <section className="relative min-h-screen bg-gradient-to-b from-slate-900 via-gray-900 to-slate-900 text-white overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-screen items-center py-20 lg:py-0">
 
         {/* --- 60% Text Content (Original Content) --- */}
         <div className="lg:col-span-3 z-10 text-center lg:text-left">
           <div className="max-w-lg mx-auto lg:mx-0 animate-fade-in-up">
-            <span className="text-lg font-bold text-blue-400 uppercase tracking-widest">
-              Welcome to ShopTechX
-            </span>
-            <h2 className="text-5xl md:text-7xl font-extrabold drop-shadow-xl mt-4">
-              The Future <br /> in Your Hands.
-            </h2>
-            <p className="mt-6 text-lg md:text-xl text-gray-300 drop-shadow-lg">
-              Experience cutting-edge technology. Explore our curated collection of the finest tech gear.
-            </p>
-            <button
-              onClick={() => { document.getElementById('product-section')?.scrollIntoView({ behavior: 'smooth' }); }}
-              className="group relative inline-flex items-center justify-center mt-10 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full transition-all duration-300 overflow-hidden hover:from-blue-700 hover:to-indigo-800 shadow-2xl shadow-blue-500/30 transform hover:scale-110"
-            >
+            <span className="text-lg font-bold text-blue-400 uppercase tracking-widest">Welcome to ShopTechX</span>
+            <h2 className="text-5xl md:text-7xl font-extrabold drop-shadow-xl mt-4">The Future <br /> in Your Hands.</h2>
+            <p className="mt-6 text-lg md:text-xl text-gray-300 drop-shadow-lg">Experience cutting-edge technology. Explore our curated collection of the finest tech gear.</p>
+            <button onClick={() => { document.getElementById('product-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="group relative inline-flex items-center justify-center mt-10 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full transition-all duration-300 overflow-hidden hover:from-blue-700 hover:to-indigo-800 shadow-2xl shadow-blue-500/30 transform hover:scale-110">
               <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
               <span className="relative">Browse Collection</span>
             </button>
@@ -87,28 +111,14 @@ const HeroShowcase = () => {
         </div>
 
         {/* --- 40% 3D Carousel Scene (Original Design) --- */}
-        <div className="lg:col-span-2 z-0 flex items-center justify-center h-[400px] lg:h-full relative">
+        <div className="lg:col-span-2 z-0 flex items-center justify-center h-full relative">
           {/* Set perspective on the parent container */}
           <div className="absolute w-full h-full" style={{ perspective: '1000px' }}>
-            <div
-              className="relative w-full h-full transition-transform duration-1000 ease-in-out"
-              style={{ transformStyle: 'preserve-3d', transform: `rotateY(${rotation}deg)` }}
-            >
+            <div className="relative w-full h-full transition-transform duration-1000 ease-in-out" style={{ transformStyle: 'preserve-3d', transform: `rotateY(${rotation}deg)` }}>
               {/* Items are positioned absolutely within the rotating container */}
               {carouselProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="absolute top-1/2 left-1/2 -mt-[160px] -ml-[100px] md:-mt-[190px] md:-ml-[140px] w-[200px] h-[320px] md:w-[280px] md:h-[380px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
-                  style={{
-                    transform: `rotateY(${index * anglePerItem}deg) translateZ(${radius}px)`,
-                    backfaceVisibility: 'hidden',
-                  }}
-                >
-                  <img
-                    src={product.img}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                  />
+                <div key={product.id} className="absolute top-1/2 left-1/2 -mt-[160px] -ml-[100px] md:-mt-[190px] md:-ml-[140px] w-[200px] h-[320px] md:w-[280px] md:h-[380px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50" style={{ transform: `rotateY(${index * anglePerItem}deg) translateZ(${radius}px)`, backfaceVisibility: 'hidden' }}>
+                  <img src={product.img} alt={product.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                   <p className="absolute bottom-4 left-4 text-lg font-bold">{product.title}</p>
                 </div>
@@ -118,18 +128,10 @@ const HeroShowcase = () => {
 
           {/* Carousel Navigation */}
           <div className="absolute z-20 bottom-0 lg:bottom-10 left-1/2 -translate-x-1/2 flex gap-3">
-            <button
-              onClick={() => rotate('prev')}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/20 transition-all transform hover:scale-110"
-              aria-label="Previous item"
-            >
+            <button onClick={() => rotate('prev')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/20 transition-all transform hover:scale-110" aria-label="Previous item">
               <ChevronLeft size={24} />
             </button>
-            <button
-              onClick={() => rotate('next')}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/20 transition-all transform hover:scale-110"
-              aria-label="Next item"
-            >
+            <button onClick={() => rotate('next')} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/20 transition-all transform hover:scale-110" aria-label="Next item">
               <ChevronRight size={24} />
             </button>
           </div>
@@ -147,6 +149,7 @@ export default function App() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
@@ -224,7 +227,7 @@ export default function App() {
       {/* --- NEW INNOVATIVE NAVBAR --- */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200/80 sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16 sm:h-20">
 
             {/* Left: Contact Icon */}
             <div className="flex-1 flex justify-start">
@@ -239,7 +242,7 @@ export default function App() {
 
             {/* Center: Logo */}
             <div className="flex-shrink-0">
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700 cursor-pointer transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(30,58,138,0.2)]" onClick={goToHome}>
+              <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700 cursor-pointer transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(30,58,138,0.2)]" onClick={goToHome}>
                 ShopTechX
               </h1>
             </div>
@@ -249,7 +252,7 @@ export default function App() {
               <div className="relative">
                 <button
                   onClick={() => setShowWishlist(true)}
-                  className="relative flex items-center justify-center w-10 h-10 rounded-full text-slate-600 hover:text-red-600 hover:bg-gray-100 transition-colors"
+                  className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-slate-600 hover:text-red-600 hover:bg-gray-100 transition-colors"
                   aria-label={`Wishlist`}
                 >
                   <Heart className="w-5 h-5" />
@@ -264,7 +267,7 @@ export default function App() {
               <div className="relative">
                 <button
                   onClick={() => setShowMiniCart(true)}
-                  className="relative flex items-center justify-center w-10 h-10 rounded-full text-slate-600 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+                  className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-slate-600 hover:text-blue-600 hover:bg-gray-100 transition-colors"
                   aria-label={`Shopping cart with ${cartCount} items`}
                 >
                   <ShoppingCart className="w-5 h-5" />
@@ -344,7 +347,7 @@ export default function App() {
         {/* === START OF CHANGED SECTION === */}
         {view === 'products' && (
           // Main sticky container
-          <div className="mb-12 bg-white p-6 rounded-lg shadow-lg sticky top-[80px] z-20 backdrop-blur-lg bg-white/80 border border-gray-200/80">
+          <div className="mb-12 bg-white p-4 sm:p-6 rounded-lg shadow-lg sticky top-[64px] sm:top-[80px] z-20 backdrop-blur-lg bg-white/80 border border-gray-200/80">
 
             {/* Original Layout: Search on left, filters on right (on desktop) */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -367,16 +370,16 @@ export default function App() {
                  - Removed the broken `md:max-w-[50%]` class.
               */}
               <nav className="w-full md:w-auto py-1">
-                {/* - `md:justify-end`: Aligns pills to the right on desktop.
-                  - Removed horizontal scrolling to allow pills to wrap instead.
-                */}
-                <div className="flex gap-3 flex-wrap md:justify-end">
+                {/* Mobile: show a Filters button that opens a panel. Desktop: show pills inline */}
+                <div className="flex md:hidden justify-end">
+                  <button onClick={() => setShowFilterPanel(true)} className="px-4 py-2 rounded-full border bg-white text-sm font-medium">Filters</button>
+                </div>
+
+                <div className="hidden md:flex gap-3 flex-wrap md:justify-end">
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat === 'All' ? null : cat)}
-                      // `flex-shrink-0`: Prevents pills from squishing.
-                      // `whitespace-nowrap`: Keeps text on one line.
                       className={`
                         flex-shrink-0       
                         whitespace-nowrap   
@@ -397,6 +400,30 @@ export default function App() {
                 </div>
               </nav>
 
+            </div>
+          </div>
+        )}
+        {/* Mobile Filter Panel (slide-down) */}
+        {showFilterPanel && (
+          <div className="md:hidden mt-3">
+            <div className="bg-white rounded-lg shadow-md border p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">Filters</h3>
+                <button onClick={() => setShowFilterPanel(false)} className="p-1 rounded-full hover:bg-gray-100">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => { setSelectedCategory(cat === 'All' ? null : cat); setShowFilterPanel(false); }}
+                    className={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium capitalize ${selectedCategory === cat || (cat === 'All' && selectedCategory === null) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-slate-700'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

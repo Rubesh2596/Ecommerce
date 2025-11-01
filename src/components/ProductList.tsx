@@ -39,14 +39,14 @@ const ProductItem = ({ product, onProductClick }: ProductItemProps) => {
       </button>
 
       {/* Image Container - Added overflow-hidden */}
-      <div className="relative w-full h-52 bg-white p-4 overflow-hidden">
+      <div className="relative w-full h-40 sm:h-52 bg-white p-4 overflow-hidden">
         <img
           src={product.image}
           alt={product.title}
           className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out group-hover:scale-105"
         />
-        {/* View Details overlay - New "pop" animation */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+        {/* View Details overlay - hidden on small screens to avoid covering content on touch devices */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm items-center justify-center opacity-0 transition-opacity duration-300 ease-in-out hidden sm:flex group-hover:opacity-100">
           <span className="text-white font-semibold py-2 px-5 rounded-full bg-white/20 border border-white/50 transform scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 ease-in-out">
             View Details
           </span>
@@ -57,7 +57,7 @@ const ProductItem = ({ product, onProductClick }: ProductItemProps) => {
       <div className="p-5 flex-1 flex flex-col justify-between border-t border-slate-200">
         <div>
           <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest">{product.category}</p>
-          <h3 className="mt-2 font-bold text-gray-800 max-h-[3rem] overflow-hidden leading-tight text-sm">
+          <h3 className="mt-2 font-bold text-gray-800 max-h-[3rem] overflow-hidden leading-tight text-sm break-words" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
             {product.title}
           </h3>
         </div>
@@ -209,11 +209,11 @@ export default function ProductList({ onProductClick, searchTerm = '', category 
   return (
     <>
       <style>{animationStyle}</style>
-      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filtered.map((product, index) => (
           <div
             key={product.id}
-            className="break-inside-avoid animate-fade-in-up"
+            className="animate-fade-in-up"
             style={{ animationDelay: `${index * 75}ms` }} // Staggered animation
           >
             <ProductItem

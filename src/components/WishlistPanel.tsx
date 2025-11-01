@@ -23,7 +23,7 @@ export default function WishlistPanel({ open, onClose, onViewCart, onBack }: Pro
         <div className={`fixed inset-0 z-50 transition-all duration-500 ease-in-out ${open ? 'visible' : 'invisible'}`}>
             <div onClick={onClose} className={`absolute inset-0 bg-black/60 transition-opacity duration-500 ${open ? 'opacity-100' : 'opacity-0'}`} />
 
-            <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transition-transform duration-500 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`absolute top-0 right-0 h-full w-full max-w-md sm:max-w-md bg-white shadow-2xl flex flex-col transition-transform duration-500 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex items-center justify-between p-6 border-b">
                     <div className="flex items-center gap-3">
                         <button
@@ -48,18 +48,18 @@ export default function WishlistPanel({ open, onClose, onViewCart, onBack }: Pro
                         <p className="text-gray-500 mt-2">Add products to your wishlist to see them here.</p>
                     </div>
                 ) : (
-                    <div className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-4">
+                    <div className="flex-grow overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4">
                         {items.map((it) => (
                             <div key={it.id} className="flex items-center gap-4">
-                                <div className="w-20 h-20 bg-white rounded-md border p-1 flex-shrink-0">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-md border p-1 flex-shrink-0">
                                     <img src={it.image} alt={it.title} className="w-full h-full object-contain" />
                                 </div>
                                 <div className="flex-grow min-w-0">
-                                    <p className="font-semibold text-sm max-h-[3rem] overflow-hidden leading-tight">{it.title}</p>
+                                    <p className="font-semibold text-sm max-h-[3rem] overflow-hidden leading-tight break-words">{it.title}</p>
                                     <p className="text-sm text-gray-500">${it.price.toFixed(2)}</p>
                                 </div>
-                                <div className="flex flex-col gap-2 w-28 flex-shrink-0">
-                                    <button onClick={() => moveToCart(it)} className="w-full text-sm bg-blue-600 text-white px-3 py-1 rounded-lg">Move to cart</button>
+                                <div className="flex flex-col gap-2 w-24 sm:w-28 flex-shrink-0">
+                                    <button onClick={() => moveToCart(it)} className="w-full text-sm bg-blue-600 text-white px-2 py-1 rounded-lg">Move to cart</button>
                                     <button onClick={() => remove(it.id)} className="w-full text-sm text-red-600 hover:underline">Remove</button>
                                 </div>
                             </div>
