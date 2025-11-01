@@ -1,0 +1,305 @@
+import { useState, useEffect } from 'react';
+// Updated imports: Removed ChevronLeft/Right as the new hero doesn't use them
+import { ShoppingCart, Search, ArrowUp, Mail, X } from 'lucide-react';
+import ProductList from './components/ProductList';
+import Cart from './components/Cart';
+import CheckoutForm from './components/CheckoutForm';
+import ThankYou from './components/ThankYou';
+import useCartStore from './store/cartStore';
+import type { Product } from './types';
+import ProductDetailModal from './components/ProductDetailModal';
+
+type View = 'products' | 'cart' | 'checkout' | 'confirmation';
+
+// --- NEW INNOVATIVE HERO COMPONENT (60/40 SPLIT) ---
+
+// New images for a fading slideshow
+const heroImages = [
+  { id: 1, title: "Curated Laptop", img: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1926" },
+  { id: 2, title: "Elegant Smart Watch", img: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1974" },
+  { id: 3, title: "Modern Camera", img: "https://images.unsplash.com/photo-1593121925328-3f909b16129f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1974" },
+  { id: 4, title: "Immersive Audio", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070" }
+];
+
+const HeroShowcase = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-slide effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prevIndex => (prevIndex + 1) % heroImages.length);
+    }, 4000); // Change image every 4 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section className="relative min-h-[90vh] bg-gray-50 text-slate-900 overflow-hidden">
+      {/* Decorative background shapes */}
+      <div className="absolute -bottom-1/3 -right-1/4 w-3/4 h-3/4 bg-blue-100/40 rounded-full blur-3xl opacity-50 -z-0" />
+      <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-indigo-100/40 rounded-full blur-3xl opacity-50 -z-0" />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-[90vh] items-center py-20 lg:py-0">
+        
+        {/* --- 60% Text Content --- */}
+        <div className="lg:col-span-3 z-10 text-center lg:text-left">
+          <div className="max-w-lg mx-auto lg:mx-0 animate-fade-in-up">
+            <span className="text-lg font-bold text-blue-600 uppercase tracking-widest">
+              Curated for Quality
+            </span>
+            <h2 className="text-5xl md:text-7xl font-extrabold text-slate-900 drop-shadow-lg mt-4">
+              Elevate Your <br /> Everyday.
+            </h2>
+            <p className="mt-6 text-lg md:text-xl text-gray-600 drop-shadow-sm">
+              Discover a selection of premium tech designed to blend seamlessly into your life.
+            </p>
+            <button
+              onClick={() => { document.getElementById('product-section')?.scrollIntoView({ behavior: 'smooth' }); }}
+              className="group relative inline-flex items-center justify-center mt-10 px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full transition-all duration-300 overflow-hidden hover:from-blue-700 hover:to-indigo-800 shadow-2xl shadow-blue-500/30 transform hover:scale-110"
+            >
+              <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+              <span className="relative">Shop The Collection</span>
+            </button>
+          </div>
+        </div>
+
+        {/* --- 40% Image Slideshow Scene --- */}
+        <div className="lg:col-span-2 z-10 flex items-center justify-center h-[400px] lg:h-[600px] relative mt-10 lg:mt-0">
+          <div className="relative w-full h-full max-w-md lg:max-w-none">
+            {heroImages.map((image, index) => (
+              <div
+                key={image.id}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+              >
+                <img 
+                  src={image.img} 
+                  alt={image.title} 
+                  className="w-full h-full object-cover rounded-3xl shadow-2xl shadow-gray-400/30"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-3xl"></div>
+                <p className="absolute bottom-6 left-6 text-xl font-bold text-white drop-shadow-md">{image.title}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+};
+// --- END NEW HERO COMPONENT ---
+
+
+export default function App() {
+  const [view, setView] = useState<View>('products');
+  const [showMiniCart, setShowMiniCart] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const { items, clearCart } = useCartStore();
+  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  // Effect to handle body scroll when a modal or panel is open
+  useEffect(() => {
+    const isModalOpen = showMiniCart || !!selectedProduct;
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showMiniCart, selectedProduct]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleSuccessfulCheckout = () => {
+    clearCart();
+    setView('confirmation');
+  };
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderView = () => {
+    switch (view) {
+      case 'cart':
+        return <Cart onCheckout={() => setView('checkout')} onContinueShopping={() => setView('products')} />;
+      case 'checkout':
+        return <CheckoutForm onSuccessfulCheckout={handleSuccessfulCheckout} onBack={() => setView('cart')} />;
+      case 'confirmation':
+        return <ThankYou onBackToHome={() => setView('products')} />;
+      case 'products':
+      default:
+        return <ProductList onProductClick={handleProductClick} searchTerm={searchTerm} category={selectedCategory} />;
+    }
+  };
+
+  const categories = ['All', 'electronics', `men's clothing`, `women's clothing`, 'jewelery'];
+
+  return (
+    <div className="min-h-screen bg-gray-100 text-slate-800 font-sans antialiased selection:bg-blue-500 selection:text-white">
+      {/* --- NAVBAR --- */}
+        <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200/80 sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex-shrink-0">
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700 cursor-pointer transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(30,58,138,0.2)]" onClick={() => { setView('products'); setSelectedCategory(null); setSearchTerm(''); scrollToTop(); }}>
+                ShopTechX
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+                <button
+                  onClick={() => alert('Contact button clicked!')}
+                  className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+                >
+                  <Mail size={18} />
+                  <span>Contact Us</span>
+                </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowMiniCart(true)}
+                  className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label={`Shopping cart with ${cartCount} items`}
+                >
+                  <ShoppingCart className="w-6 h-6 text-slate-600" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center border-2 border-white animate-pulse">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* --- SLIDE-IN CART PANEL --- */}
+      <div className={`fixed inset-0 z-50 transition-all duration-500 ease-in-out ${showMiniCart ? 'visible' : 'invisible'}`}>
+          {/* Overlay */}
+          <div onClick={() => setShowMiniCart(false)} className={`absolute inset-0 bg-black/60 transition-opacity duration-500 ${showMiniCart ? 'opacity-100' : 'opacity-0'}`}></div>
+          {/* Panel */}
+          <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transition-transform duration-500 ease-in-out ${showMiniCart ? 'translate-x-0' : 'translate-x-full'}`}>
+              <div className="flex items-center justify-between p-6 border-b">
+                  <h2 className="text-2xl font-bold">My Cart</h2>
+                  <button onClick={() => setShowMiniCart(false)} className="p-2 rounded-full hover:bg-gray-100">
+                      <X size={24} />
+                  </button>
+              </div>
+
+              {items.length === 0 ? (
+                  <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                      <ShoppingCart size={64} className="text-gray-300 mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-700">Your cart is empty</h3>
+                      <p className="text-gray-500 mt-2">Looks like you haven't added anything yet.</p>
+                  </div>
+              ) : (
+                  <div className="flex-grow overflow-y-auto p-6 space-y-4">
+                      {items.map((it) => (
+                           <div key={it.id} className="flex items-center gap-4">
+                             <div className="w-20 h-20 bg-white rounded-md border p-1 flex-shrink-0">
+                               <img src={it.image} alt={it.title} className="w-full h-full object-contain" />
+                             </div>
+                             <div className="flex-grow overflow-hidden">
+                               <p className="font-semibold truncate">{it.title}</p>
+                               <p className="text-sm text-gray-500">Qty: {it.quantity}</p>
+</div>
+                             <p className="font-bold text-lg">${(it.price * it.quantity).toFixed(2)}</p>
+                           </div>
+                      ))}
+                  </div>
+              )}
+
+              {items.length > 0 && (
+                <div className="p-6 border-t bg-gray-50">
+                    <div className="flex justify-between items-center mb-4 text-lg font-semibold">
+                        <span>Subtotal</span>
+                        <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="space-y-3">
+                        <button onClick={() => { setView('cart'); setShowMiniCart(false); }} className="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors">View Cart</button>
+                        <button onClick={() => { setView('checkout'); setShowMiniCart(false); }} className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-indigo-800 transition-all transform hover:scale-105">Proceed to Checkout</button>
+                    </div>
+                </div>
+              )}
+          </div>
+      </div>
+
+
+      {/* --- HERO SECTION --- */}
+      {view === 'products' && (
+        <HeroShowcase />
+      )}
+      
+      {/* --- MAIN CONTENT --- */}
+      <main id="product-section" className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {view === 'products' && (
+          <div className="mb-12 bg-white p-6 rounded-lg shadow-lg sticky top-[80px] z-20 backdrop-blur-lg bg-white/80 border border-gray-200/80">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="relative w-full md:w-auto md:flex-grow max-w-lg">
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search products, brands, and more..."
+                  className="w-full bg-gray-100 border-2 border-transparent rounded-full py-3 pl-12 pr-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
+              </div>
+              <nav className="flex items-center gap-2 flex-wrap justify-center">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat === 'All' ? null : cat)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors duration-300 ${(selectedCategory === cat || (cat === 'All' && selectedCategory === null)) ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-600 hover:bg-gray-100'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+            {renderView()}
+        </div>
+      </main>
+
+      {/* --- FOOTER & OTHER COMPONENTS --- */}
+      <footer className="bg-white text-slate-600 py-12 border-t mt-16">
+        <div className="container mx-auto px-6 text-center">
+          <p>&copy; {new Date().getFullYear()} ShopTechX. All rights reserved.</p>
+          <p className="text-sm text-slate-500 mt-2">Pioneering Tomorrow's Technology Today</p>
+        </div>
+      </footer>
+      {showScrollTop && (
+        <button onClick={scrollToTop} className="fixed bottom-8 right-8 bg-blue-600 text-white p-4 rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-300 animate-fade-in-up transform hover:scale-110">
+          <ArrowUp />
+        </button>
+      )}
+      <ProductDetailModal product={selectedProduct} onClose={closeModal} />
+    </div>
+  );
+}
